@@ -43,7 +43,7 @@ public class PuppiesController {
             String token = jwtUtil.generateToken(authenticatedUser.getEmail());
             return ResponseEntity.ok(token);
         }
-        return ResponseEntity.status(401).build(); // Unauthorized
+        return ResponseEntity.status(401).build();
     }
 
     @PostMapping(value = "/posts", consumes = {"multipart/form-data"})
@@ -98,7 +98,6 @@ public class PuppiesController {
         return ResponseEntity.ok(likedPosts);
     }
 
-    // Fetch a list of posts the user made
     @GetMapping("/posts/made")
     public ResponseEntity<List<PostEntity>> fetchUserPosts(Authentication authentication) {
         String email = authentication.getName();
