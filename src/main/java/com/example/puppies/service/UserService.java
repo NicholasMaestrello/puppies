@@ -17,6 +17,10 @@ public class UserService {
         return userRepository.findById(id);
     }
 
+    public UserEntity findByEmail(String email) {
+        return userRepository.findByEmail(email);
+    }
+
     public UserEntity createUser(UserEntity user) {
         return userRepository.save(user);
     }
@@ -24,5 +28,4 @@ public class UserService {
     public UserEntity authenticateUser(String email) {
         return userRepository.findByEmail(email);
     }
-
 }
