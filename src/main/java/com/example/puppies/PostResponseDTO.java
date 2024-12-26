@@ -10,7 +10,5 @@ public class PostResponseDTO implements Serializable {
     private Long id;
     private String content;
     private LocalDateTime date;
-    private byte[] image; // Holds the image byte array
-
-    // Getters and Setters
+    private byte[] image;
 }

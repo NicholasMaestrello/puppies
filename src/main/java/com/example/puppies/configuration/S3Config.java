@@ -22,13 +22,12 @@ public class S3Config {
 
     @Bean
     public AmazonS3 amazonS3() {
-        // Set your LocalStack endpoint and credentials
         BasicAWSCredentials awsCreds = new BasicAWSCredentials("test", "test");
 
         return AmazonS3ClientBuilder.standard()
                 .withEndpointConfiguration(new AwsClientBuilder.EndpointConfiguration("http://localhost:4566", "us-east-1"))
                 .withCredentials(new AWSStaticCredentialsProvider(awsCreds))
-                .enablePathStyleAccess() // Important for using LocalStack
+                .enablePathStyleAccess()
                 .build();
     }
 }

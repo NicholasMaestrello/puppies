@@ -13,8 +13,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
-import software.amazon.awssdk.core.sync.RequestBody;
-import software.amazon.awssdk.services.s3.S3Client;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -22,18 +20,6 @@ import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
-
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
-import org.springframework.web.multipart.MultipartFile;
-import software.amazon.awssdk.services.s3.S3Client;
-import software.amazon.awssdk.services.s3.model.PutObjectRequest;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-
 
 @Service
 public class PostService {
@@ -62,8 +48,7 @@ public class PostService {
             metadata.setContentLength(image.getSize());
 
             try (InputStream inputStream = image.getInputStream()) {
-                var x = amazonS3.putObject("sample-bucket", fileName, inputStream, metadata);
-                System.out.println(x.getVersionId());
+                amazonS3.putObject("sample-bucket", fileName, inputStream, metadata);
             }
 
         PostEntity postEntity = new PostEntity();
@@ -76,9 +61,9 @@ public class PostService {
     }
 
     public byte[] getImageFromS3(String imageUrl) {
-        S3Object s3Object = amazonS3.getObject("sample-bucket", imageUrl); // Replace with your bucket name
+        S3Object s3Object = amazonS3.getObject("sample-bucket", imageUrl);
         try (InputStream inputStream = s3Object.getObjectContent()) {
-            return inputStream.readAllBytes(); // Convert InputStream to byte array
+            return inputStream.readAllBytes();
         } catch (IOException e) {
             throw new RuntimeException("Error retrieving image from S3", e);
         }
@@ -101,9 +86,5 @@ public class PostService {
         return likes.stream()
                 .map(PostLikeEntity::getPost)
                 .collect(Collectors.toList());
-    }
-
-    private String saveImage(MultipartFile image) {
-        return "URL/to/saved/image";
     }
 }

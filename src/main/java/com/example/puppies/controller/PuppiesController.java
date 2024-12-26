@@ -119,16 +119,17 @@ public class PuppiesController {
         }
         var post = postOpt.get();
 
-        // Retrieve the image from S3
         byte[] imageBytes = postService.getImageFromS3(post.getImageUrl());
 
-        // Build the response object
         PostResponseDTO response = new PostResponseDTO();
         response.setId(post.getId());
         response.setContent(post.getContent());
         response.setDate(post.getDate());
-        response.setImage(imageBytes); // assuming PostResponse can hold byte array
+        response.setImage(imageBytes);
 
         return ResponseEntity.ok(response);
     }
+
+
+
 }
