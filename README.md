@@ -71,4 +71,24 @@ To interact with the API, you can use tools like [Postman](https://www.postman.c
   ```bash
     curl --location --request GET 'http://localhost:8080/api/posts/{postId}'
   ```
-  
+
+## setup localstack for S3 use
+```bash
+docker-compose up
+
+awslocal s3api create-bucket --bucket sample-bucket
+
+awslocal s3api list-buckets
+```
+
+### S3 use by cli
+```bash
+awslocal s3api put-object \
+--bucket sample-bucket \
+--key cat01.jpg \
+--body cat01.jpg
+
+awslocal s3api list-objects \
+--bucket sample-bucket
+awslocal s3 presign s3://sample-bucket/image.jpg
+```

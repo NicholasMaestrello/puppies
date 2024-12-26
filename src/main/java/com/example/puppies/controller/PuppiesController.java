@@ -1,5 +1,7 @@
 package com.example.puppies.controller;
 
+import com.amazonaws.services.s3.AmazonS3;
+import com.amazonaws.services.s3.model.ObjectMetadata;
 import com.example.puppies.entity.PostEntity;
 import com.example.puppies.entity.UserEntity;
 import com.example.puppies.security.JwtUtil;
@@ -12,7 +14,11 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
+import software.amazon.awssdk.services.s3.S3Client;
+import software.amazon.awssdk.services.s3.model.PutObjectRequest;
 
+import java.io.IOException;
+import java.io.InputStream;
 import java.time.LocalDateTime;
 import java.util.List;
 
@@ -30,6 +36,7 @@ public class PuppiesController {
 
     @Autowired
     private JwtUtil jwtUtil;
+
 
     @PostMapping("/account")
     public ResponseEntity<UserEntity> createUser(@RequestBody UserEntity user) {
@@ -56,7 +63,11 @@ public class PuppiesController {
         String email = authentication.getName();
 
 
-        return ResponseEntity.status(HttpStatus.CREATED).body(postService.createPost(email, content, date, image));
+        try {
+            return ResponseEntity.status(HttpStatus.CREATED).body(postService.createPost(email, content, date, image));
+        } catch (IOException e) {
+            return ResponseEntity.internalServerError().build();
+        }
     }
 
     @GetMapping("/users/{id}/feed")
