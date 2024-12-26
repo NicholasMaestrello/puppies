@@ -11,8 +11,10 @@ import com.example.puppies.repository.PostRepository;
 import com.example.puppies.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.cache.CacheManager;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
+import org.springframework.cache.annotation.Caching;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -35,6 +37,9 @@ public class PostService {
     @Autowired
     private AmazonS3 amazonS3;
 
+    @Autowired
+    private CacheManager cacheManager;
+
 
     @Autowired
     private PostLikeRepository postLikeRepository;
@@ -45,10 +50,13 @@ public class PostService {
     public PostEntity createPost(String email, String  content, LocalDateTime date, MultipartFile image) throws IOException {
         UserEntity user = userRepository.findByEmail(email);
 
-        return savePostEntity(content, date, image, user);
+        var entity = savePostEntity(content, date, image, user);
+
+        cacheManager.getCache("userFeedCache").evict(user.getId());
+        cacheManager.getCache("userPostsCache").evict(user.getId());
+        return entity;
     }
 
-    @CacheEvict(value = {"userFeedCache", "userPostsCache"}, key = "#user.id")
     public PostEntity savePostEntity(String content, LocalDateTime date, MultipartFile image, UserEntity user) throws IOException {
         String fileName = saveImageOnS3(image);
 

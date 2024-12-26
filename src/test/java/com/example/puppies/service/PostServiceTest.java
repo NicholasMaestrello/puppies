@@ -15,6 +15,8 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.cache.Cache;
+import org.springframework.cache.CacheManager;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
@@ -43,6 +45,9 @@ public class PostServiceTest {
     @Mock
     private MultipartFile image;
 
+    @Mock
+    private CacheManager cacheManager;
+
     @InjectMocks
     private PostService postService;
 
@@ -61,11 +66,16 @@ public class PostServiceTest {
         LocalDateTime date = LocalDateTime.now();
 
         UserEntity user = new UserEntity();
+        user.setId(1L);
         user.setEmail(email);
+
+        Cache cacheMock = mock(Cache.class);
+
 
         when(userRepository.findByEmail(email)).thenReturn(user);
         when(postRepository.save(any(PostEntity.class))).thenAnswer(invocationOnMock -> invocationOnMock.getArgument(0));
 
+        when(cacheManager.getCache(anyString())).thenReturn(cacheMock);
         when(image.getOriginalFilename()).thenReturn("testImage.jpg");
         when(image.getSize()).thenReturn(1024L);
         when(image.getInputStream()).thenReturn(mock(InputStream.class));
@@ -77,6 +87,9 @@ public class PostServiceTest {
 
         verify(userRepository, times(1)).findByEmail(email);
         verify(postRepository, times(1)).save(any(PostEntity.class));
+        verify(cacheManager, times(1)).getCache("userFeedCache");
+        verify(cacheManager, times(1)).getCache("userPostsCache");
+        verify(cacheMock, times(2)).evict(user.getId());
 
         Assertions.assertNotNull(postEntity);
         Assertions.assertTrue( postEntity.getImageUrl().endsWith("testImage.jpg"));
