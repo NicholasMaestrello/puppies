@@ -1,5 +1,6 @@
 package com.example.puppies.controller;
 
+
 import com.example.puppies.entity.PostEntity;
 import com.example.puppies.entity.UserEntity;
 import com.example.puppies.security.JwtUtil;
@@ -36,7 +37,9 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 
-public class PuppiesControllerTest {
+
+public class PostControllerTest {
+
 
     @Mock
     private PostService postService;
@@ -56,7 +59,7 @@ public class PuppiesControllerTest {
 
 
     @InjectMocks
-    private PuppiesController puppiesController;
+    private PostController userController;
 
     private MockMvc mockMvc;
 
@@ -67,59 +70,10 @@ public class PuppiesControllerTest {
     @BeforeEach
     public void setUp() {
         MockitoAnnotations.openMocks(this);
-        this.mockMvc = MockMvcBuilders.standaloneSetup(puppiesController).build();
+        this.mockMvc = MockMvcBuilders.standaloneSetup(userController).build();
         this.objectMapper = new ObjectMapper();
     }
 
-
-    @Test
-    public void testCreateUser_Success() throws Exception {
-        UserEntity user = new UserEntity();
-        user.setId(1L);
-        user.setEmail("user@example.com");
-        user.setName("User One");
-
-        when(userService.createUser(any(UserEntity.class))).thenReturn(user);
-
-        mockMvc.perform(post("/api/account")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(user)))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.id").value(1L))
-                .andExpect(jsonPath("$.email").value("user@example.com"))
-                .andExpect(jsonPath("$.name").value("User One"));
-    }
-
-    @Test
-    public void testAuthenticateUser_Success() throws Exception {
-        UserEntity user = new UserEntity();
-        user.setEmail("user@example.com");
-        user.setName("User One");
-
-        String token = "generated-token";
-
-        when(userService.authenticateUser(user.getEmail())).thenReturn(user);
-        when(jwtUtil.generateToken(user.getEmail())).thenReturn(token);
-
-        mockMvc.perform(post("/api/account/authentication")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(user)))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$").value(token));
-    }
-
-    @Test
-    public void testAuthenticateUser_Failure() throws Exception {
-        UserEntity user = new UserEntity();
-        user.setEmail("nonexistent@example.com");
-
-        when(userService.authenticateUser(user.getEmail())).thenReturn(null);
-
-        mockMvc.perform(post("/api/account/authentication")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(user)))
-                .andExpect(status().isUnauthorized());
-    }
 
     @Test
     public void testCreatePost_Success() throws Exception {
@@ -185,22 +139,6 @@ public class PuppiesControllerTest {
                 .andExpect(status().isInternalServerError());
     }
 
-    @Test
-    public void testGetUserFeed_Success() throws Exception {
-        Long userId = 1L;
-        UserEntity user = new UserEntity();
-        user.setId(userId);
-
-        when(userService.findById(userId)).thenReturn(Optional.of(user));
-        when(postService.getUserFeed(user)).thenReturn(List.of(new PostEntity()));
-
-        mockMvc.perform(get("/api/users/{id}/feed", userId))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$").isArray());
-
-        verify(userService, times(1)).findById(userId);
-        verify(postService, times(1)).getUserFeed(user);
-    }
 
     @Test
     public void testLikePost_Success() throws Exception {
@@ -220,22 +158,6 @@ public class PuppiesControllerTest {
         verify(postLikeService, times(1)).addLike(postId, user);
     }
 
-    @Test
-    public void testFetchUserProfile_Success() throws Exception {
-        Long userId = 1L;
-        UserEntity user = new UserEntity();
-        user.setId(userId);
-        user.setEmail("user@example.com");
-
-        when(userService.findById(userId)).thenReturn(Optional.of(user));
-
-        mockMvc.perform(get("/api/users/{userId}/profile", userId))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.id").value(userId))
-                .andExpect(jsonPath("$.email").value("user@example.com"));
-
-        verify(userService, times(1)).findById(userId);
-    }
 
     @Test
     public void testFetchLikedPosts_Success() throws Exception {

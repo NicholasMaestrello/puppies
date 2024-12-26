@@ -1,11 +1,8 @@
 package com.example.puppies.controller;
 
-import com.amazonaws.services.s3.AmazonS3;
-import com.amazonaws.services.s3.model.ObjectMetadata;
-import com.example.puppies.PostResponseDTO;
+import com.example.puppies.dto.PostResponseDTO;
 import com.example.puppies.entity.PostEntity;
 import com.example.puppies.entity.UserEntity;
-import com.example.puppies.security.JwtUtil;
 import com.example.puppies.service.PostLikeService;
 import com.example.puppies.service.PostService;
 import com.example.puppies.service.UserService;
@@ -15,17 +12,16 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
-import software.amazon.awssdk.services.s3.S3Client;
-import software.amazon.awssdk.services.s3.model.PutObjectRequest;
 
 import java.io.IOException;
-import java.io.InputStream;
 import java.time.LocalDateTime;
 import java.util.List;
 
 @RestController
 @RequestMapping("/api")
-public class PuppiesController {
+public class PostController {
+
+
     @Autowired
     private UserService userService;
 
@@ -34,25 +30,6 @@ public class PuppiesController {
 
     @Autowired
     private PostLikeService postLikeService;
-
-    @Autowired
-    private JwtUtil jwtUtil;
-
-
-    @PostMapping("/account")
-    public ResponseEntity<UserEntity> createUser(@RequestBody UserEntity user) {
-        return ResponseEntity.ok(userService.createUser(user));
-    }
-
-    @PostMapping("/account/authentication")
-    public ResponseEntity<String> authenticateUser(@RequestBody UserEntity user) {
-        UserEntity authenticatedUser = userService.authenticateUser(user.getEmail());
-        if (authenticatedUser != null) {
-            String token = jwtUtil.generateToken(authenticatedUser.getEmail());
-            return ResponseEntity.ok(token);
-        }
-        return ResponseEntity.status(401).build();
-    }
 
     @PostMapping(value = "/posts", consumes = {"multipart/form-data"})
     public ResponseEntity<PostEntity> createPost(
@@ -63,7 +40,6 @@ public class PuppiesController {
 
         String email = authentication.getName();
 
-
         try {
             return ResponseEntity.status(HttpStatus.CREATED).body(postService.createPost(email, content, date, image));
         } catch (IOException e) {
@@ -71,12 +47,6 @@ public class PuppiesController {
         }
     }
 
-    @GetMapping("/users/{id}/feed")
-    public ResponseEntity<List<PostEntity>> getUserFeed(@PathVariable Long id) {
-        return userService.findById(id)
-                .map(userEntity -> ResponseEntity.ok(postService.getUserFeed(userEntity)))
-                .orElseGet(() -> ResponseEntity.notFound().build());
-    }
 
     @PostMapping("/posts/{postId}/like")
     public ResponseEntity<Void> likePost(@PathVariable Long postId, Authentication authentication) {
@@ -88,12 +58,6 @@ public class PuppiesController {
         return ResponseEntity.status(HttpStatus.OK).build();
     }
 
-    @GetMapping("/users/{userId}/profile")
-    public ResponseEntity<UserEntity> fetchUserProfile(@PathVariable Long userId) {
-        return userService.findById(userId)
-                .map(ResponseEntity::ok)
-                .orElseGet(() -> ResponseEntity.notFound().build());
-    }
 
     @GetMapping("/posts/liked")
     public ResponseEntity<List<PostEntity>> fetchLikedPosts(Authentication authentication) {
@@ -129,7 +93,4 @@ public class PuppiesController {
 
         return ResponseEntity.ok(response);
     }
-
-
-
 }

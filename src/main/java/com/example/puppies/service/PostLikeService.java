@@ -6,6 +6,7 @@ import com.example.puppies.entity.UserEntity;
 import com.example.puppies.repository.PostLikeRepository;
 import com.example.puppies.repository.PostRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -17,6 +18,8 @@ public class PostLikeService {
     @Autowired
     private PostRepository postRepository;
 
+
+    @CacheEvict(value = "likedPostsCache", key = "#user.id")
     public void addLike(Long postId, UserEntity user) {
         PostEntity post = postRepository.findById(postId).orElseThrow(() -> new RuntimeException("Post not found"));
         if (!postLikeRepository.existsByUserAndPost(user, post)) {

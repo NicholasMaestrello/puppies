@@ -1,4 +1,4 @@
-package com.example.puppies;
+package com.example.puppies.dto;
 
 import lombok.Data;
 

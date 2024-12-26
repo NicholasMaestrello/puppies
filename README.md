@@ -72,7 +72,7 @@ To interact with the API, you can use tools like [Postman](https://www.postman.c
     curl --location --request GET 'http://localhost:8080/api/posts/{postId}'
   ```
 
-## setup localstack for S3 use
+## setup local for use (Redis, S3)
 ```bash
 docker-compose up
 
