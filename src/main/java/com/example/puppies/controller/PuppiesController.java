@@ -2,6 +2,7 @@ package com.example.puppies.controller;
 
 import com.amazonaws.services.s3.AmazonS3;
 import com.amazonaws.services.s3.model.ObjectMetadata;
+import com.example.puppies.PostResponseDTO;
 import com.example.puppies.entity.PostEntity;
 import com.example.puppies.entity.UserEntity;
 import com.example.puppies.security.JwtUtil;
@@ -77,13 +78,6 @@ public class PuppiesController {
                 .orElseGet(() -> ResponseEntity.notFound().build());
     }
 
-    @GetMapping("/posts/{postId}")
-    public ResponseEntity<PostEntity> getPostDetails(@PathVariable Long postId) {
-        return postService.getPostById(postId)
-                .map(ResponseEntity::ok)
-                .orElseGet(() -> ResponseEntity.notFound().build());
-    }
-
     @PostMapping("/posts/{postId}/like")
     public ResponseEntity<Void> likePost(@PathVariable Long postId, Authentication authentication) {
         String username = authentication.getName();
@@ -115,5 +109,26 @@ public class PuppiesController {
         UserEntity user = userService.findByEmail(email);
         List<PostEntity> userPosts = postService.getUserPosts(user);
         return ResponseEntity.ok(userPosts);
+    }
+
+    @GetMapping("/posts/{postId}")
+    public ResponseEntity<PostResponseDTO> getPostDetails(@PathVariable Long postId) {
+        var postOpt = postService.getPostById(postId);
+        if (postOpt.isEmpty()) {
+            return ResponseEntity.notFound().build();
+        }
+        var post = postOpt.get();
+
+        // Retrieve the image from S3
+        byte[] imageBytes = postService.getImageFromS3(post.getImageUrl());
+
+        // Build the response object
+        PostResponseDTO response = new PostResponseDTO();
+        response.setId(post.getId());
+        response.setContent(post.getContent());
+        response.setDate(post.getDate());
+        response.setImage(imageBytes); // assuming PostResponse can hold byte array
+
+        return ResponseEntity.ok(response);
     }
 }

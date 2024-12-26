@@ -92,3 +92,6 @@ awslocal s3api list-objects \
 --bucket sample-bucket
 awslocal s3 presign s3://sample-bucket/image.jpg
 ```
+
+### postman
+to use postman collections, just import the file `[puppies.postman_collection.json](puppies.postman_collection.json)`

@@ -2,6 +2,7 @@ package com.example.puppies.service;
 
 import com.amazonaws.services.s3.AmazonS3;
 import com.amazonaws.services.s3.model.ObjectMetadata;
+import com.amazonaws.services.s3.model.S3Object;
 import com.example.puppies.entity.PostEntity;
 import com.example.puppies.entity.PostLikeEntity;
 import com.example.puppies.entity.UserEntity;
@@ -72,6 +73,15 @@ public class PostService {
         postEntity.setUser(user);
 
         return postRepository.save(postEntity);
+    }
+
+    public byte[] getImageFromS3(String imageUrl) {
+        S3Object s3Object = amazonS3.getObject("sample-bucket", imageUrl); // Replace with your bucket name
+        try (InputStream inputStream = s3Object.getObjectContent()) {
+            return inputStream.readAllBytes(); // Convert InputStream to byte array
+        } catch (IOException e) {
+            throw new RuntimeException("Error retrieving image from S3", e);
+        }
     }
 
     public List<PostEntity> getUserFeed(UserEntity user) {
